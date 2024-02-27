@@ -133,11 +133,12 @@ function viewEmployees() {
 	                    t1.first_name as 'First Name',
 	                    t1.last_name as 'Last Name',
 	                    t2.title as 'Title',
-	                    IFNULL(CONCAT(t3.first_name, ' ', t3.last_name), '
-                         Manager') as 'Manager'
+                        t4.name as 'Department',
+	                    IFNULL(CONCAT(t3.first_name, ' ', t3.last_name), 'Manager') as 'Manager'
                     from employee t1	
 	                    left join role t2 on t1.role_id = t2.id
 	                    left join employee t3 on t1.manager_id = t3.id
+                        left join department t4 on t2.department_id = t4.id
                     order by t1.id`
     db.query(query, function (err, res) {
         if (err) throw err;
@@ -253,14 +254,14 @@ const viewEmployeesByDept = () =>  {
 function addEmployee() {
     // First, display all roles along with their department names
     console.log('Here is the list of roles')
-    db.query(`SELECT distinct
+    db.query(`SELECT 
                 t1.id as 'Role ID', 
                 t1.title as 'Role', 
                 t2.name AS department,
                 CASE WHEN t3.manager_id is NULL THEN 'Yes' ELSE 'No' END AS 'Is Management Role'
             FROM role t1
                 LEFT JOIN department t2 ON t1.department_id = t2.id
-                INNER JOIN employee t3 on t1.id = t3.role_id`, function(err, res) {
+                LEFT JOIN employee t3 on t1.id = t3.role_id`, function(err, res) {
 if (err) throw err;
 console.table(res);
 
@@ -670,7 +671,14 @@ const updateEmployeeManager = () => {
 // ------------------------------------------------------------------------ //
 
 function viewRoles() {
-    const query = 'SELECT * FROM role';
+    console.log("Viewing All Roles");
+    const query = `SELECT 
+                        t1.id as 'Role ID',
+                        t1.title as 'Role Name',
+                        t1.salary as 'Salary', 
+                        t2.name as 'Department'  
+                    FROM role t1
+                        inner join department t2 on t1.department_id = t2.id`;
     db.query(query, function (err, res) {
         if (err) throw err;
         console.table(res);
@@ -781,7 +789,10 @@ const deleteRole = () => {
 // ------------------------------------------------------------------------ //
 
 function viewDepartments() {
-    const query = 'SELECT * FROM department';
+    const query = `SELECT 
+                        id as 'Department Id',
+                        name as 'Department Name' 
+                   FROM department`;
     db.query(query, function (err, res) {
         if (err) throw err;
         console.table(res);
